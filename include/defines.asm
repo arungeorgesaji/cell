@@ -3,6 +3,7 @@
 %define SYS_OPEN   2
 %define SYS_CLOSE  3
 %define SYS_EXIT   60
+%define SYS_IOCTL   16
 
 %define STDIN  0
 %define STDOUT 1
@@ -10,6 +11,9 @@
 
 %define TCGETS     0x5401
 %define TCSETS     0x5402
+
+%define ICANON  0000002h   
+%define ECHO    0000010h
 
 %define ESC     0x1b
 %define CSI     '['
