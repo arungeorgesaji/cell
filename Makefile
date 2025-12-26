@@ -1,11 +1,14 @@
 ASM = nasm
-ASMFLAGS = -f elf64 -g -F dwarf
+ASMFLAGS = -f elf64 -g -F dwarf -Iinclude/
 LD = ld
-LDFLAGS =
-TARGET = cell
+AR = ar
+ARFLAGS = rcs
+
+TARGET = libcell.a    
 
 SRC_DIR = src
 BUILD_DIR = build
+INCLUDE_DIR = include
 
 SRCS = $(wildcard $(SRC_DIR)/*.asm)
 OBJS = $(patsubst $(SRC_DIR)/%.asm, $(BUILD_DIR)/%.o, $(SRCS))
@@ -13,7 +16,7 @@ OBJS = $(patsubst $(SRC_DIR)/%.asm, $(BUILD_DIR)/%.o, $(SRCS))
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(LD) $(LDFLAGS) -o $@ $^
+	$(AR) $(ARFLAGS) $@ $^
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.asm
 	mkdir -p $(BUILD_DIR)
@@ -22,10 +25,4 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.asm
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET)
 
-run: $(TARGET)
-	./$(TARGET)
-
-debug: $(TARGET)
-	gdb ./$(TARGET)
-
-.PHONY: all clean run debug
+.PHONY: all clean
