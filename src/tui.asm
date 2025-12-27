@@ -125,76 +125,25 @@ print_string:
     ret
 
 set_color:
-    mov rax, SYS_WRITE
-    mov rdi, STDOUT
+    mov eax, SYS_WRITE
+    mov edi, STDOUT
     syscall
     ret
 
-set_color_red:
-    push rbp
-    mov rbp, rsp
-    
-    mov rsi, COLOR_RED
-    mov rdx, COLOR_RED_LEN
-    call set_color
-    
-    pop rbp
-    ret
+%macro DEFINE_COLOR 3
+global set_color_%1
+set_color_%1:
+    mov rsi, %2
+    mov rdx, %3
+    jmp set_color
+%endmacro
 
-set_color_green:
-    push rbp
-    mov rbp, rsp
-    
-    mov rsi, COLOR_GREEN
-    mov rdx, COLOR_GREEN_LEN
-    call set_color
-    
-    pop rbp
-    ret
-
-set_color_blue:
-    push rbp
-    mov rbp, rsp
-    
-    mov rsi, COLOR_BLUE
-    mov rdx, COLOR_BLUE_LEN
-    call set_color
-    
-    pop rbp
-    ret
-
-set_color_cyan:
-    push rbp
-    mov rbp, rsp
-    
-    mov rsi, COLOR_CYAN
-    mov rdx, COLOR_CYAN_LEN
-    call set_color
-    
-    pop rbp
-    ret
-
-set_color_yellow:
-    push rbp
-    mov rbp, rsp
-    
-    mov rsi, COLOR_YELLOW
-    mov rdx, COLOR_YELLOW_LEN
-    call set_color
-    
-    pop rbp
-    ret
-
-set_color_bright:
-    push rbp
-    mov rbp, rsp
-    
-    mov rsi, COLOR_BRIGHT
-    mov rdx, COLOR_BRIGHT_LEN
-    call set_color
-    
-    pop rbp
-    ret
+DEFINE_COLOR red,     COLOR_RED,     COLOR_RED_LEN
+DEFINE_COLOR green,   COLOR_GREEN,   COLOR_GREEN_LEN
+DEFINE_COLOR blue,    COLOR_BLUE,    COLOR_BLUE_LEN
+DEFINE_COLOR cyan,    COLOR_CYAN,    COLOR_CYAN_LEN
+DEFINE_COLOR yellow,  COLOR_YELLOW,  COLOR_YELLOW_LEN
+DEFINE_COLOR bright,  COLOR_BRIGHT,  COLOR_BRIGHT_LEN
 
 reset_color:
     push rbp
