@@ -1,5 +1,24 @@
 %include "defines.asm"
 
+section .data
+clear_seq:      db 0x1b, '[2J'
+clear_seq_len:  equ $ - clear_seq
+home_seq:       db 0x1b, '[H'
+home_seq_len:   equ $ - home_seq
+reset_seq:      db 0x1b, '[0m'
+reset_seq_len:  equ $ - reset_seq
+hide_cursor_seq: db 0x1b, '[?25l'
+hide_cursor_len: equ $ - hide_cursor_seq
+show_cursor_seq: db 0x1b, '[?25h'
+show_cursor_len: equ $ - show_cursor_seq
+query_cursor_pos: db 0x1b, '[6n'
+query_cursor_len: equ $ - query_cursor_pos
+far_position_seq: db 0x1b, '[999;999H'
+far_position_len: equ $ - far_position_seq
+
+section .bss
+term_response: resb 32
+
 section .text
 global clear_screen
 global set_cursor
@@ -15,6 +34,7 @@ global set_color_bright
 global reset_color
 global hide_cursor
 global show_cursor
+global get_term_size
 
 extern int_to_str
 
@@ -118,9 +138,86 @@ print_string:
     mov rsi, rbx
     mov rdx, rcx
     syscall
-    
+
 .done:
     pop rbx
+    pop rbp 
+    ret
+
+get_term_size:
+    push rbp
+    mov rbp, rsp
+    push r12
+    push r13
+    push rbx
+    
+    mov rsi, far_position_seq
+    mov rdx, far_position_len
+    call _print_ansi
+    
+    mov rsi, query_cursor_pos
+    mov rdx, query_cursor_len
+    call _print_ansi
+    
+    mov rax, SYS_READ
+    mov rdi, STDIN
+    mov rsi, term_response
+    mov rdx, 31
+    syscall
+    
+    cmp rax, 6          
+    jl .default_size
+    
+    mov r12, term_response
+    
+    add r12, 2
+    
+    xor rax, rax
+    xor rcx, rcx
+    
+.parse_rows:
+    movzx rcx, byte [r12]
+    inc r12
+    cmp cl, ';'
+    je .parse_cols
+    cmp cl, 0
+    je .default_size
+    sub cl, '0'
+    cmp cl, 9
+    ja .default_size     
+    imul rax, 10
+    add rax, rcx
+    jmp .parse_rows
+    
+.parse_cols:
+    mov r13, rax         
+    xor rax, rax
+    
+.parse_cols_loop:
+    movzx rcx, byte [r12]
+    inc r12
+    cmp cl, 'R'
+    je .done
+    cmp cl, 0
+    je .default_size
+    sub cl, '0'
+    cmp cl, 9
+    ja .default_size     
+    imul rax, 10
+    add rax, rcx
+    jmp .parse_cols_loop
+    
+.default_size:
+    mov r13, 24          
+    mov rax, 80          
+    
+.done:
+    mov rbx, rax         
+    mov rax, r13         
+    
+    pop rbx
+    pop r13
+    pop r12
     pop rbp
     ret
 
@@ -183,15 +280,3 @@ _print_ansi:
     mov rdi, STDOUT
     syscall
     ret
-
-section .data
-clear_seq:      db 0x1b, '[2J'
-clear_seq_len:  equ $ - clear_seq
-home_seq:       db 0x1b, '[H'
-home_seq_len:   equ $ - home_seq
-reset_seq:      db 0x1b, '[0m'
-reset_seq_len:  equ $ - reset_seq
-hide_cursor_seq: db 0x1b, '[?25l'
-hide_cursor_len: equ $ - hide_cursor_seq
-show_cursor_seq: db 0x1b, '[?25h'
-show_cursor_len: equ $ - show_cursor_seq
