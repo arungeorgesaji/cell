@@ -9,8 +9,6 @@ global str_find
 global format_int
 global format_hex
 
-extern int_to_str
-
 section .bss
 format_buffer: resb 64
 
@@ -19,15 +17,14 @@ section .text
 str_len:
     push rbp
     mov rbp, rsp
-    
     xor rax, rax
-    
+
 .loop:
     cmp byte [rdi + rax], 0
     je .done
     inc rax
     jmp .loop
-    
+
 .done:
     pop rbp
     ret
@@ -35,21 +32,20 @@ str_len:
 str_copy:
     push rbp
     mov rbp, rsp
-    push rsi
-    push rdi
-    
+    push rdi             
+    xor rcx, rcx
+
 .loop:
-    mov al, [rsi]
-    mov [rdi], al
+    mov al, [rsi + rcx]
+    mov [rdi + rcx], al
     test al, al
     jz .done
-    inc rsi
-    inc rdi
+    inc rcx
     jmp .loop
-    
+
 .done:
-    pop rax             
-    pop rsi
+    mov rax, rcx         
+    pop rdi
     pop rbp
     ret
 
@@ -58,56 +54,60 @@ str_cat:
     mov rbp, rsp
     push rdi
     push rsi
-    
+
+    xor rax, rax
+
 .find_end:
-    cmp byte [rdi], 0
-    je .copy
-    inc rdi
+    cmp byte [rdi + rax], 0
+    je .found_end
+    inc rax
     jmp .find_end
-    
-.copy:
-    mov al, [rsi]
-    mov [rdi], al
+
+.found_end:
+    push rdi             
+    add rdi, rax         
+
+    xor rcx, rcx
+
+.copy_loop:
+    mov al, [rsi + rcx]
+    mov [rdi + rcx], al
     test al, al
-    jz .done
-    inc rsi
-    inc rdi
-    jmp .copy
-    
-.done:
+    jz .copy_done
+    inc rcx
+    jmp .copy_loop
+
+.copy_done:
+    add rax, rcx         
+    pop rdi
     pop rsi
-    pop rax             
+    pop rdi
     pop rbp
     ret
 
 str_cmp:
     push rbp
     mov rbp, rsp
-    
+
 .loop:
     mov al, [rdi]
     mov bl, [rsi]
-    test al, al
-    jz .check_str2
     cmp al, bl
     jne .diff
+    test al, al
+    jz .equal
     inc rdi
     inc rsi
     jmp .loop
-    
-.check_str2:
-    test bl, bl
-    jz .equal
-    mov rax, -1
-    jmp .done
-    
+
 .equal:
     xor rax, rax
     jmp .done
-    
+
 .diff:
-    sub al, bl
-    movsx rax, al
+    movzx rax, al
+    movzx rbx, bl
+    sub rax, rbx
     
 .done:
     pop rbp
@@ -116,23 +116,48 @@ str_cmp:
 str_find:
     push rbp
     mov rbp, rsp
-    
-.loop:
+    test rsi, rsi
+    jz .needle_empty
+    mov al, [rsi]
+    test al, al
+    jz .needle_empty    
+
+.outer_loop:
     mov al, [rdi]
     test al, al
     jz .not_found
-    cmp al, sil
-    je .found
+    push rdi
+    push rsi
+    mov rcx, rdi
+    mov rdx, rsi
+
+.match_loop:
+    mov al, [rcx]
+    mov bl, [rdx]
+    cmp al, bl
+    jne .no_match
+    test bl, bl
+    jz .found           
+    inc rcx
+    inc rdx
+    jmp .match_loop
+
+.no_match:
+    pop rsi
+    pop rdi
     inc rdi
-    jmp .loop
-    
+    jmp .outer_loop
+
+.needle_empty:
 .found:
+    pop rsi
+    pop rdi
     mov rax, rdi
     jmp .done
-    
+
 .not_found:
     xor rax, rax
-    
+
 .done:
     pop rbp
     ret
@@ -141,24 +166,55 @@ format_int:
     push rbp
     mov rbp, rsp
     push rbx
-    push r12
-    
-    mov rbx, rdi        
-    mov r12, 10         
-    
-    test rax, rax
+    push rdi             
+
+    mov rbx, rdi         
+    mov ecx, 10
+
+    test eax, eax
     jns .positive
-    
     mov byte [rbx], '-'
     inc rbx
-    neg rax
-    
+    neg eax
+
 .positive:
-    call int_to_str
-    
-    mov rax, rdi        
-    
-    pop r12
+    mov rdi, rbx
+    add rdi, 32          
+    mov byte [rdi], 0
+    dec rdi
+
+.convert_loop:
+    test eax, eax
+    jz .done_convert
+    xor edx, edx
+    div ecx             
+    add dl, '0'
+    mov [rdi], dl
+    dec rdi
+    jmp .convert_loop
+
+.done_convert:
+    test esi, esi
+    jns .copy_back
+    dec rdi            
+
+.copy_back:
+    inc rdi
+
+.copy_loop:
+    mov al, [rdi]
+    mov [rbx], al
+    inc rbx
+    inc rdi
+    test al, al
+    jnz .copy_loop
+
+    pop rax              
+    mov rdx, rbx
+    sub rdx, rax
+    dec rdx              
+    mov rax, rdx         
+
     pop rbx
     pop rbp
     ret
@@ -167,45 +223,69 @@ format_hex:
     push rbp
     mov rbp, rsp
     push rbx
-    push r12
-    push r13
-    
-    mov rbx, rdi        
-    mov r12, rax        
-    mov r13, 16         
-    
-    mov byte [rbx], '0'
-    mov byte [rbx + 1], 'x'
+    push rdi
+
+    mov rbx, rdi         
+    mov eax, esi         
+
+    mov word [rbx], '0x'
     add rbx, 2
-    
-    mov rcx, 16        
-    
-.convert_loop:
-    mov rax, r12
-    and al, 0xF
 
-    cmp al, 10
-    jb .digit
-    add al, 'a' - 10
-    jmp .store
-    
-.digit:
-    add al, '0'
-    
-.store:
-    mov [rbx], al
+    test eax, eax
+    jnz .convert
+    mov byte [rbx], '0'
     inc rbx
+    jmp .done
 
-    shr r12, 4        
-    dec rcx
-    jnz .convert_loop
-    
+.convert:
+    mov rcx, 28
+
+.extract_loop:
+    mov edx, eax
+    shr edx, cl
+    and dl, 0xF
+    cmp dl, 10
+    jb .digit
+    add dl, 'a' - 10
+    jmp .store
+
+.digit:
+    add dl, '0'
+
+.store:
+    mov [rbx], dl
+    inc rbx
+    sub rcx, 4
+    jns .extract_loop
+
+    mov rdi, rbx
+    sub rdi, 1
+
+.remove_leading:
+    cmp rdi, rbx
+    jae .done_remove
+    cmp byte [rdi], '0'
+    jne .done_remove
+    mov byte [rdi], 0
+    dec rdi
+    jmp .remove_leading
+
+.done_remove:
+
+    cmp byte [rbx-1], '0'
+    jne .done
+    cmp word [rbx-3], '0x'
+    jne .done
+    mov byte [rbx-1], 0    
+
+.done:
     mov byte [rbx], 0
-    
-    mov rax, rdi       
-    
-    pop r13
-    pop r12
+    pop rax                
+    mov rdx, rbx
+    sub rdx, rax
+    dec rdx                
+    mov rax, rdx
+
     pop rbx
     pop rbp
     ret
