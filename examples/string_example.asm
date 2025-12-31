@@ -138,7 +138,7 @@ _start:
     xor al, al
     rep stosb
     
-    mov rax, 0xCAFEBABE
+    mov rsi, 0xCAFEBABE
     mov rdi, buffer
     call format_hex
     
@@ -157,9 +157,13 @@ _start:
     
     test rax, rax
     jz .not_found
+
+    push rax
     
     mov rdi, .found_msg
     call print_string
+
+    pop rax
     
     mov dil, [rax]
     call print_char

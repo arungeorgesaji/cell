@@ -132,12 +132,12 @@ str_find:
     mov rdx, rsi
 
 .match_loop:
-    mov al, [rcx]
-    mov bl, [rdx]
+    mov bl, [rdx]       
+    test bl, bl         
+    jz .found
+    mov al, [rcx]       
     cmp al, bl
     jne .no_match
-    test bl, bl
-    jz .found           
     inc rcx
     inc rdx
     jmp .match_loop
@@ -149,6 +149,9 @@ str_find:
     jmp .outer_loop
 
 .needle_empty:
+    mov rax, rdi        
+    jmp .done
+
 .found:
     pop rsi
     pop rdi
