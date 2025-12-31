@@ -1,3 +1,5 @@
+%include "../include/defines.asm"   
+
 extern cell_init, cell_exit, clear_screen, set_cursor, print_string, print_char
 extern set_color_cyan, set_color_yellow, reset_color
 extern hide_cursor, show_cursor, wait_key

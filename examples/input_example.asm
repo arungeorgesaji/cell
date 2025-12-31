@@ -1,3 +1,5 @@
+%include "../include/defines.asm"   
+
 section .data
     msg1 db 'Input Functions Test', 0
     msg2 db '1. Press a key (blocking)', 0

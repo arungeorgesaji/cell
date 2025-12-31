@@ -1,3 +1,5 @@
+%include "../include/defines.asm"   
+
 ; Not working right now
 section .data
     title db 'Box Drawing Test', 0

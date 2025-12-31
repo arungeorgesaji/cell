@@ -1,3 +1,5 @@
+%include "../include/defines.asm"   
+
 section .data
     msg1 db 'Basic TUI Test', 0
     msg2 db 'Screen cleared successfully!', 0

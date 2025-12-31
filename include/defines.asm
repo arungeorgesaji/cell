@@ -1,19 +1,19 @@
-%define SYS_READ   0
-%define SYS_WRITE  1
-%define SYS_OPEN   2
-%define SYS_CLOSE  3
-%define SYS_EXIT   60
-%define SYS_IOCTL   16
+SYS_READ    equ 0
+SYS_WRITE   equ 1
+SYS_OPEN    equ 2
+SYS_CLOSE   equ 3
+SYS_IOCTL   equ 16
+SYS_EXIT    equ 60
 
-%define STDIN  0
-%define STDOUT 1
-%define STDERR 2
+STDIN       equ 0
+STDOUT      equ 1
+STDERR      equ 2
 
-%define TCGETS     0x5401
-%define TCSETS     0x5402
+TCGETS      equ 0x5401
+TCSETS      equ 0x5402
 
-%define ICANON  0000002h   
-%define ECHO    0000010h
+ICANON equ 2
+ECHO   equ 8
 
 %define ESC     0x1b
 %define CSI     '['
@@ -55,3 +55,9 @@ COLOR_WHITE_LEN   equ 5
 COLOR_BRIGHT_LEN  equ 4
 CURSOR_HIDE_LEN   equ 6
 CURSOR_SHOW_LEN   equ 6
+
+ERR_INIT_FAILED     equ -1
+ERR_NOT_TTY         equ -2
+ERR_IOCTL_FAILED    equ -3
+ERR_MALLOC_FAILED   equ -4
+ERR_INVALID_INPUT   equ -5
