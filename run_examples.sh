@@ -2,6 +2,23 @@
 
 set -e  
 
+LINKER="ld"
+
+while getopts "l:" opt; do
+    case $opt in
+        l)
+            LINKER="$OPTARG"
+            ;;
+        *)
+            echo "Usage: $0 [-l linker] <example_name>"
+            echo "  -l linker: specify 'ld' or 'gcc' (default: gcc)"
+            exit 1
+            ;;
+    esac
+done
+
+shift $((OPTIND-1))
+
 if [ $# -ne 1 ]; then
     echo "Error: Please provide exactly one argument: the example name"
     echo "Usage: $0 <example_name>"
@@ -24,7 +41,15 @@ echo "Assembling $SRC_FILE ..."
 nasm -f elf64 -Iinclude/ "$SRC_FILE" -o "$OBJ_FILE"
 
 echo "Linking with libcell.a to produce $EXECUTABLE ..."
-ld "$OBJ_FILE" -L. -lcell -o "$EXECUTABLE"
+
+if [ "$LINKER" = "ld" ]; then
+    ld "$OBJ_FILE" -L. -lcell -o "$EXECUTABLE"
+elif [ "$LINKER" = "gcc" ]; then
+    gcc -no-pie "$OBJ_FILE" -L. -lcell -o "$EXECUTABLE"
+else
+    echo "Error: Invalid linker '$LINKER'. Use 'ld' or 'gcc'"
+    exit 1
+fi
 
 echo "Done! Run with: ./$EXECUTABLE"
 

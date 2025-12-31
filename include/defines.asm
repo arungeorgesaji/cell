@@ -61,3 +61,80 @@ ERR_NOT_TTY         equ -2
 ERR_IOCTL_FAILED    equ -3
 ERR_MALLOC_FAILED   equ -4
 ERR_INVALID_INPUT   equ -5
+
+KEY_A      equ 'a'
+KEY_B      equ 'b'
+KEY_C      equ 'c'
+KEY_D      equ 'd'
+KEY_E      equ 'e'
+KEY_F      equ 'f'
+KEY_G      equ 'g'
+KEY_H      equ 'h'
+KEY_I      equ 'i'
+KEY_J      equ 'j'
+KEY_K      equ 'k'
+KEY_L      equ 'l'
+KEY_M      equ 'm'
+KEY_N      equ 'n'
+KEY_O      equ 'o'
+KEY_P      equ 'p'
+KEY_Q      equ 'q'
+KEY_R      equ 'r'
+KEY_S      equ 's'
+KEY_T      equ 't'
+KEY_U      equ 'u'
+KEY_V      equ 'v'
+KEY_W      equ 'w'
+KEY_X      equ 'x'
+KEY_Y      equ 'y'
+KEY_Z      equ 'z'
+
+KEY_0      equ '0'
+KEY_1      equ '1'
+KEY_2      equ '2'
+KEY_3      equ '3'
+KEY_4      equ '4'
+KEY_5      equ '5'
+KEY_6      equ '6'
+KEY_7      equ '7'
+KEY_8      equ '8'
+KEY_9      equ '9'
+
+KEY_ENTER     equ 13
+KEY_BACKSPACE equ 8
+KEY_ESC       equ 27
+KEY_SPACE     equ 32
+KEY_TAB       equ 9
+KEY_DEL       equ 127
+
+KEY_UP        equ 1000
+KEY_DOWN      equ 1001
+KEY_RIGHT     equ 1002
+KEY_LEFT      equ 1003
+KEY_DELETE    equ 1004
+KEY_HOME      equ 1005
+KEY_END       equ 1006
+KEY_PAGEUP    equ 1007
+KEY_PAGEDOWN  equ 1008
+
+KEY_F1     equ 2001
+KEY_F2     equ 2002
+KEY_F3     equ 2003
+KEY_F4     equ 2004
+KEY_F5     equ 2005
+KEY_F6     equ 2006
+KEY_F7     equ 2007
+KEY_F8     equ 2008
+KEY_F9     equ 2009
+KEY_F10    equ 2010
+KEY_F11    equ 2011
+KEY_F12    equ 2012
+
+MOD_NONE   equ 0
+MOD_CTRL   equ 0x01
+MOD_ALT    equ 0x02
+MOD_SHIFT  equ 0x04
+
+MOD_CTRL_SHIFT equ (MOD_CTRL | MOD_SHIFT)
+MOD_CTRL_ALT   equ (MOD_CTRL | MOD_ALT)
+MOD_ALT_SHIFT  equ (MOD_ALT | MOD_SHIFT)
